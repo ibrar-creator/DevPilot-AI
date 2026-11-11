@@ -1,3 +1,4 @@
+
 import ApiError from "../utils/ApiError.js";
 
 const validate = (schema) => {
@@ -11,13 +12,13 @@ const validate = (schema) => {
       }));
 
       return next(
-        new ApiError(400, "Validation failed", errors)
+        new ApiError(422, "Validation failed", errors)
       );
     }
 
     req.validatedBody = result.data;
-    next();
+
+    return next();
   };
 };
-
 export default validate;

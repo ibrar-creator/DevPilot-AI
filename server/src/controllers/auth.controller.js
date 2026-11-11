@@ -101,7 +101,7 @@ export const logout = asyncHandler(async (req, res) => {
   }
 
   // Revoke the stored refresh-token session.
-  await logoutUser(refreshToken);
+await authService.logoutUser(refreshToken);
 
   clearAuthCookies(res);
 

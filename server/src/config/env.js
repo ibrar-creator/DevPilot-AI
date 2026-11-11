@@ -53,4 +53,8 @@ export const env = Object.freeze({
 
   PASSWORD_RESET_URL: process.env.PASSWORD_RESET_URL,
   EMAIL_VERIFY_URL: process.env.EMAIL_VERIFY_URL,
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY || "",
+GEMINI_MODEL: process.env.GEMINI_MODEL || "gemini-3.5-flash-lite",
+AI_MAX_CODE_LENGTH: Number(process.env.AI_MAX_CODE_LENGTH || 30000),
+AI_RATE_LIMIT: Number(process.env.AI_RATE_LIMIT || 10),
 });
