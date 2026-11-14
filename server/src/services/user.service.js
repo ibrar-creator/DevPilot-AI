@@ -1,9 +1,7 @@
 import User from "../models/user.model.js";
 import ApiError from "../utils/ApiError.js";
-import {
-  hashPassword,
-  comparePassword,
-} from "./password.service.js";
+import { USER_ROLES } from "../auth/auth.constants.js";
+import { hashPassword, comparePassword } from "./password.service.js";
 
 const safeUser = (user) => ({
   id: user._id.toString(),
@@ -54,13 +52,13 @@ export const updateUserProfile = async (userId, data) => {
 export const changeUserPassword = async (
   userId,
   currentPassword,
-  newPassword
+  newPassword,
 ) => {
   const user = await getUserWithPassword(userId);
 
   const isPasswordCorrect = await comparePassword(
     currentPassword,
-    user.password
+    user.password,
   );
 
   if (!isPasswordCorrect) {
@@ -77,23 +75,36 @@ export const changeUserPassword = async (
 
   return safeUser(user);
 };
+const protectLastActiveAdmin = async (user) => {
+  if (user.role !== USER_ROLES.ADMIN) {
+    return;
+  }
 
+  const activeAdminCount = await User.countDocuments({
+    role: USER_ROLES.ADMIN,
+    isActive: true,
+  });
+
+  if (activeAdminCount <= 1) {
+    throw new ApiError(
+      403,
+      "You cannot deactivate or delete the last active admin account.",
+    );
+  }
+};
 // Deactivate account (soft deactivation)
-export const deactivateUserAccount = async (
-  userId,
-  currentPassword
-) => {
+export const deactivateUserAccount = async (userId, currentPassword) => {
   const user = await getUserWithPassword(userId);
 
   const isPasswordCorrect = await comparePassword(
     currentPassword,
-    user.password
+    user.password,
   );
 
   if (!isPasswordCorrect) {
     throw new ApiError(400, "Current password is incorrect");
   }
-
+  await protectLastActiveAdmin(user);
   user.isActive = false;
   user.refreshTokenHash = undefined;
   user.refreshTokenExpiresAt = undefined;
@@ -104,21 +115,18 @@ export const deactivateUserAccount = async (
 };
 
 // Permanently delete account
-export const deleteUserAccount = async (
-  userId,
-  currentPassword
-) => {
+export const deleteUserAccount = async (userId, currentPassword) => {
   const user = await getUserWithPassword(userId);
 
   const isPasswordCorrect = await comparePassword(
     currentPassword,
-    user.password
+    user.password,
   );
 
   if (!isPasswordCorrect) {
     throw new ApiError(400, "Current password is incorrect");
   }
-
+  await protectLastActiveAdmin(user);
   await User.deleteOne({ _id: userId });
 
   return true;

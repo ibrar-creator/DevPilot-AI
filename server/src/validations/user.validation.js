@@ -24,16 +24,20 @@ export const changePasswordSchema = z
     newPassword: passwordSchema,
   })
   .strict()
-  .refine(
-    (data) => data.currentPassword !== data.newPassword,
-    {
-      message: "New password must be different from current password",
-      path: ["newPassword"],
-    }
-  );
+  .refine((data) => data.currentPassword !== data.newPassword, {
+    message: "New password must be different from current password",
+    path: ["newPassword"],
+  });
 
 export const accountPasswordSchema = z
   .object({
     currentPassword: z.string().min(1).max(72),
+  })
+  .strict();
+export const updateNotificationPreferencesSchema = z
+  .object({
+    emailNotifications: z.boolean(),
+    productUpdates: z.boolean(),
+    securityAlerts: z.boolean(),
   })
   .strict();

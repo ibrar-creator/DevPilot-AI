@@ -71,7 +71,22 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    notificationPreferences: {
+      emailNotifications: {
+        type: Boolean,
+        default: true,
+      },
 
+      productUpdates: {
+        type: Boolean,
+        default: true,
+      },
+
+      securityAlerts: {
+        type: Boolean,
+        default: true,
+      },
+    },
     lastLoginAt: {
       type: Date,
     },
@@ -79,7 +94,7 @@ const userSchema = new mongoose.Schema(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 const User = mongoose.model("User", userSchema);

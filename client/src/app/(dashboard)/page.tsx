@@ -1,7 +1,7 @@
-
 "use client";
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { motion } from "framer-motion";
 import LogoutButton from "@/components/auth/LogoutButton";
 import {
@@ -132,11 +132,59 @@ export default function DashboardPage() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [notifications, setNotifications] = useState(false);
 
-  const selectNavigation = (label: string) => {
-    setActiveNav(label);
-    setMobileMenu(false);
+const selectNavigation = (label: string) => {
+  setActiveNav(label);
+  setMobileMenu(false);
+
+  const routes: Record<string, string> = {
+    Overview: "/",
+    "Code Review": "/code-review",
+    "Code Explainer": "/code-explainer",
+    "AI Debugger": "/ai-debugger",
+    "Test Generator": "/test-generator",
+    "Settings": "/settings",
   };
 
+  const route = routes[label];
+
+  if (route) {
+    router.push(route);
+  }
+};
+  const router = useRouter();
+  const { user, loading } = useAuth();
+const userName = user?.name || "Developer";
+
+const firstName = userName.trim().split(/\s+/)[0];
+
+const userInitials =
+  userName
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("") || "U";
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/login");
+    }
+  }, [loading, user, router]);
+
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#080b12] text-white">
+        <p className="text-sm text-slate-400">Checking your session...</p>
+      </main>
+    );
+  }
+
+  if (!user) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#080b12] text-white">
+        <p className="text-sm text-slate-400">Redirecting to login...</p>
+      </main>
+    );
+  }
   return (
     <main className="min-h-screen bg-[#080b12] text-white">
       <div className="dashboard-shell">
@@ -148,11 +196,7 @@ export default function DashboardPage() {
           />
         )}
 
-        <aside
-          className={`sidebar ${
-            mobileMenu ? "sidebar-open" : ""
-          }`}
-        >
+        <aside className={`sidebar ${mobileMenu ? "sidebar-open" : ""}`}>
           <div className="flex items-center justify-between px-6 py-7">
             <div className="flex items-center gap-3">
               <div className="brand-mark">
@@ -189,9 +233,7 @@ export default function DashboardPage() {
                   <button
                     key={item.label}
                     onClick={() => selectNavigation(item.label)}
-                    className={`nav-item ${
-                      active ? "nav-item-active" : ""
-                    }`}
+                    className={`nav-item ${active ? "nav-item-active" : ""}`}
                   >
                     <Icon size={18} />
                     <span>{item.label}</span>
@@ -232,13 +274,13 @@ export default function DashboardPage() {
             </div>
 
             <div className="mt-5 flex items-center gap-3 border-t border-white/[0.07] px-2 pt-5">
-              <div className="avatar">IH</div>
+              <div className="avatar">{userInitials}</div>
+
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">Developer</p>
-                <p className="text-xs text-slate-500">Free workspace</p>
+                <p className="truncate text-sm font-medium">{userName}</p>
+                <p className="truncate text-xs text-slate-500">{user?.email}</p>
               </div>
               <ChevronDown size={16} className="text-slate-500" />
-              
             </div>
           </div>
         </aside>
@@ -287,7 +329,7 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              <div className="avatar">IH</div>
+              <div className="avatar">{userInitials}</div>
             </div>
           </header>
 
@@ -307,11 +349,12 @@ export default function DashboardPage() {
                 </div>
 
                 <h1 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">
-                  Welcome back, Developer <span>👋</span>
+                  Welcome back, {firstName} <span>👋</span>
                 </h1>
 
                 <p className="mt-2 text-sm text-slate-400">
-                  Here&apos;s what&apos;s happening in your development workspace.
+                  Here&apos;s what&apos;s happening in your development
+                  workspace.
                 </p>
               </div>
 

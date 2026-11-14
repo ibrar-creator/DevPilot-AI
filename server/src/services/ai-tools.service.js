@@ -161,7 +161,7 @@ function validateDebugResult(data, language, originalCode) {
     !isString(data.summary) ||
     typeof data.hasBugs !== "boolean" ||
     !Array.isArray(data.bugs) ||
-    !isString(data.fixedCode) ||
+    !isString(data.fixedCode) || !data.fixedCode.trim() ||
     !Array.isArray(data.changes) ||
     !Array.isArray(data.testCases)
   ) {

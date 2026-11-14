@@ -1,4 +1,3 @@
-
 "use client";
 import { useRouter } from "next/navigation";
 import { authService } from "@/services/auth.service";
@@ -22,39 +21,38 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-const router = useRouter();
-const { setUser } = useAuth();
-const [loading, setLoading] = useState(false);
-const [error, setError] = useState("");
+  const router = useRouter();
+  const { setUser } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  setError("");
-  setLoading(true);
+    setError("");
+    setLoading(true);
 
-  try {
-    const loggedInUser = await authService.login({
-  email: email.trim(),
-  password,
-});
+    try {
+      const loggedInUser = await authService.login({
+        email: email.trim(),
+        password,
+      });
 
-setUser(loggedInUser);
+      setUser(loggedInUser);
 
-router.replace("/");
-router.refresh();
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      setError(
-        error.response?.data?.message ||
-          "Unable to login. Please try again."
-      );
-    } else {
-      setError("Something went wrong. Please try again.");
+      router.replace("/");
+      router.refresh();
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        setError(
+          error.response?.data?.message || "Unable to login. Please try again.",
+        );
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <main className="flex min-h-screen bg-[#080b12] text-white">
@@ -88,8 +86,8 @@ router.refresh();
           </h1>
 
           <p className="mt-6 max-w-md text-sm leading-7 text-slate-400">
-            Your intelligent coding workspace. Review code, understand
-            complex logic, detect bugs and generate tests with AI.
+            Your intelligent coding workspace. Review code, understand complex
+            logic, detect bugs and generate tests with AI.
           </p>
 
           <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.035] p-5 backdrop-blur-xl">
@@ -98,7 +96,9 @@ router.refresh();
                 <Sparkles size={19} />
               </div>
               <div>
-                <p className="text-sm font-semibold">One workspace. Four AI tools.</p>
+                <p className="text-sm font-semibold">
+                  One workspace. Four AI tools.
+                </p>
                 <p className="mt-1 text-xs text-slate-500">
                   Everything you need to improve your code.
                 </p>
@@ -143,23 +143,31 @@ router.refresh();
             type="button"
             className="flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] text-sm font-medium transition hover:bg-white/[0.07]"
           >
-           <Code2 size={18} />
+            <Code2 size={18} />
             Sign in with GitHub
           </button>
 
           <div className="my-7 flex items-center gap-4">
             <div className="h-px flex-1 bg-white/10" />
-            <span className="text-xs text-slate-600">OR CONTINUE WITH EMAIL</span>
+            <span className="text-xs text-slate-600">
+              OR CONTINUE WITH EMAIL
+            </span>
             <div className="h-px flex-1 bg-white/10" />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="email" className="mb-2 block text-xs font-medium text-slate-300">
+              <label
+                htmlFor="email"
+                className="mb-2 block text-xs font-medium text-slate-300"
+              >
                 Email address
               </label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={17} />
+                <Mail
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+                  size={17}
+                />
                 <input
                   id="email"
                   type="email"
@@ -174,11 +182,17 @@ router.refresh();
             </div>
 
             <div>
-              <label htmlFor="password" className="mb-2 block text-xs font-medium text-slate-300">
+              <label
+                htmlFor="password"
+                className="mb-2 block text-xs font-medium text-slate-300"
+              >
                 Password
               </label>
               <div className="relative">
-                <LockKeyhole className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={17} />
+                <LockKeyhole
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+                  size={17}
+                />
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -201,31 +215,37 @@ router.refresh();
             </div>
 
             <div className="flex justify-end">
-              <Link href="/forgot-password" className="text-xs font-medium text-blue-400 hover:text-blue-300">
-                Forgot password?
+              <Link
+                href="/forgot-password"
+                className="text-sm text-violet-400 transition hover:text-violet-300"
+              >
+                Forgot Password?
               </Link>
             </div>
-{error && (
-  <div
-    role="alert"
-    className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400"
-  >
-    {error}
-  </div>
-)}
+            {error && (
+              <div
+                role="alert"
+                className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400"
+              >
+                {error}
+              </div>
+            )}
             <button
-  type="submit"
-  disabled={loading}
-  className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 text-sm font-semibold transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
->
-  {loading ? "Signing in..." : "Sign in"}
-  {!loading && <ArrowRight size={16} />}
-</button>
+              type="submit"
+              disabled={loading}
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 text-sm font-semibold transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? "Signing in..." : "Sign in"}
+              {!loading && <ArrowRight size={16} />}
+            </button>
           </form>
 
           <p className="mt-8 text-center text-sm text-slate-500">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="font-semibold text-blue-400 hover:text-blue-300">
+            <Link
+              href="/register"
+              className="font-semibold text-blue-400 hover:text-blue-300"
+            >
               Create account
             </Link>
           </p>

@@ -33,6 +33,14 @@ export const authService = {
     return response.data.data.user;
   },
 
+  async forgotPassword(email: string): Promise<void> {
+    await api.post("/auth/forgot-password", { email });
+  },
+
+  async resetPassword(token: string, password: string): Promise<void> {
+    await api.post("/auth/reset-password", { token, password });
+  },
+
   async getMe(): Promise<User> {
     const response = await api.get<ApiResponse<AuthResponse>>("/auth/me");
     return response.data.data.user;
@@ -42,14 +50,6 @@ export const authService = {
     const response = await api.post<ApiResponse<AuthResponse>>("/auth/refresh");
     return response.data.data.user;
   },
-
-async forgotPassword(email: string): Promise<void> {
-  await api.post("/auth/forgot-password", { email });
-},
-
-async resetPassword(token: string, password: string): Promise<void> {
-  await api.post("/auth/reset-password", { token, password });
-},
 
   async logout(): Promise<void> {
     await api.post("/auth/logout");
