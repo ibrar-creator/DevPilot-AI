@@ -17,6 +17,7 @@ const aiActivitySchema = new mongoose.Schema(
         "code-explainer",
         "ai-debugger",
         "test-generator",
+        "code-fixer",
       ],
       required: true,
     },

@@ -11,6 +11,8 @@ import type {
   CodeDebugResult,
   TestCasePayload,
   TestCaseGenerationResult,
+  CodeFixPayload,
+CodeFixResult,
 } from "@/types/ai";
 
 export const aiService = {
@@ -56,4 +58,16 @@ export const aiService = {
 
     return response.data.data;
   },
+
+  async fixCode(
+    payload: CodeFixPayload
+  ): Promise<CodeFixResult> {
+    const response = await api.post<ApiResponse<CodeFixResult>>(
+      "/ai/fix",
+      payload
+    );
+
+    return response.data.data;
+  },
+
 };

@@ -9,11 +9,13 @@ import { aiRateLimit } from "../middlewares/ai-rate-limit.middleware.js";
 import {
   explainCodeSchema,
   debugCodeSchema,
+  fixCodeSchema,
 } from "../validations/ai-tools.validation.js";
 
 import {
   explainCodeController,
   debugCodeController,
+  fixCodeController
 } from "../controllers/ai-tools.controller.js";
 
 const router = Router();
@@ -33,5 +35,9 @@ router.post(
   validate(debugCodeSchema),
   debugCodeController
 );
-
+router.post(
+  "/fix",
+  validate(fixCodeSchema),
+  fixCodeController
+);
 export default router;

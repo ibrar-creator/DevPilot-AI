@@ -20,7 +20,8 @@ export interface RecentActivity {
     | "code-review"
     | "code-explainer"
     | "ai-debugger"
-    | "test-generator";
+    | "test-generator"
+    | "code-fixer";
   language: string;
   score?: number | null;
   issueCount: number;

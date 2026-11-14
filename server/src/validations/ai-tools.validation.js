@@ -44,3 +44,20 @@ export const debugCodeSchema = z
     context: contextField,
   })
   .strict();
+
+export const fixCodeSchema = z
+  .object({
+    code: codeField,
+
+    language: languageField,
+
+    errorMessage: z
+      .string()
+      .trim()
+      .max(5000)
+      .optional()
+      .default(""),
+
+    context: contextField,
+  })
+  .strict();

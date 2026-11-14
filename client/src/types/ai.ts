@@ -137,3 +137,34 @@ export interface TestCaseGenerationResult {
   usage: unknown;
   model: string;
 }
+
+export interface CodeFixPayload {
+  code: string;
+  language: string;
+  errorMessage?: string;
+  context?: string;
+}
+
+export interface CodeFixIssue {
+  title: string;
+  severity: "critical" | "high" | "medium" | "low";
+  line: number | null;
+  description: string;
+  fix: string;
+}
+
+export interface CodeFixing {
+  language: string;
+  summary: string;
+  originalCode: string;
+  fixedCode: string;
+  issuesFixed: CodeFixIssue[];
+  changes: string[];
+  warnings: string[];
+}
+
+export interface CodeFixResult {
+  fixing: CodeFixing;
+  usage: unknown;
+  model: string;
+}

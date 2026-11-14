@@ -27,6 +27,7 @@ import {
   X,
   Zap,
   FileText,
+  WandSparkles,
 } from "lucide-react";
 
 const navigation = [
@@ -35,6 +36,7 @@ const navigation = [
   { label: "Code Explainer", icon: Code2 },
   { label: "AI Debugger", icon: Bug },
   { label: "Test Generator", icon: FlaskConical },
+    { label: "AI Code Fixer", icon: WandSparkles },
 ];
 
 const getStats = (analytics: DashboardAnalytics | null) => [
@@ -81,7 +83,12 @@ const getActivityDetails = (tool: string) => {
         detail: "AI Debugger",
         icon: Bug,
       };
-
+    case "code-fixer":
+      return {
+        title: "Code fixes generated",
+        detail: "AI Code Fixer",
+        icon: WandSparkles,
+      };
     case "test-generator":
       return {
         title: "Test cases generated",
@@ -127,6 +134,13 @@ const tools = [
     color: "green",
     label: "Generate tests",
   },
+    {
+    title: "AI Code Fixer",
+    description: "Generate corrected code and understand every fix.",
+    icon: WandSparkles,
+    color: "blue",
+    label: "Fix my code",
+  },
 ];
 
 export default function DashboardPage() {
@@ -144,12 +158,13 @@ const [analyticsError, setAnalyticsError] = useState(false);
     setMobileMenu(false);
 
     const routes: Record<string, string> = {
-      Overview: "/",
+      "Overview": "/",
       "Code Review": "/code-review",
       "Code Explainer": "/code-explainer",
       "AI Debugger": "/ai-debugger",
       "Test Generator": "/test-generator",
-      Settings: "/settings",
+      "Settings": "/settings",
+      "AI Code Fixer": "/code-fixer",
     };
 
     const route = routes[label];
@@ -455,10 +470,10 @@ useEffect(() => {
                     Your intelligent development toolkit
                   </p>
                 </div>
-                <span className="text-xs text-blue-400">4 tools available</span>
+                <span className="text-xs text-blue-400">5 tools available</span>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {tools.map((tool, index) => {
                   const Icon = tool.icon;
 
@@ -520,7 +535,7 @@ useEffect(() => {
                     analytics.recentActivities.map((activity) => {
                       const details = getActivityDetails(activity.tool);
                       const Icon = details.icon;
-
+                      
                       return (
                         <div
                           key={activity._id}
