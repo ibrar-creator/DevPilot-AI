@@ -1,4 +1,4 @@
-
+import { logAIActivity } from "./ai-activity.service.js";
 import { generateAIResponse } from "./ai-provider.service.js";
 import ApiError from "../utils/ApiError.js";
 
@@ -213,8 +213,12 @@ function validateDebugResult(data, language, originalCode) {
       })),
   };
 }
-
-export const explainCode = async ({ code, language, context }) => {
+export const explainCode = async ({
+  userId,
+  code,
+  language,
+  context,
+}) => {
   const userPrompt = `
 Programming language: ${language}
 
@@ -239,6 +243,15 @@ Explain this code using the required JSON structure.
     code
   );
 
+  await logAIActivity({
+    userId,
+    tool: "code-explainer",
+    language,
+    model: aiResponse.model,
+    code,
+    usage: aiResponse.usage,
+  });
+
   return {
     explanation,
     usage: aiResponse.usage,
@@ -247,6 +260,7 @@ Explain this code using the required JSON structure.
 };
 
 export const debugCode = async ({
+  userId,
   code,
   language,
   errorMessage,
@@ -279,6 +293,16 @@ Use the required JSON structure.
     language,
     code
   );
+
+  await logAIActivity({
+    userId,
+    tool: "ai-debugger",
+    language,
+    model: aiResponse.model,
+    code,
+    usage: aiResponse.usage,
+    bugCount: debugging.bugs.length,
+  });
 
   return {
     debugging,

@@ -7,6 +7,7 @@ import {
   updateProfileSchema,
   changePasswordSchema,
   accountPasswordSchema,
+  updateNotificationPreferencesSchema,
 } from "../validations/user.validation.js";
 
 import {
@@ -15,6 +16,7 @@ import {
   changePassword,
   deactivateAccount,
   deleteAccount,
+  updateNotificationPreferences,
 } from "../controllers/user.controller.js";
 
 const router = Router();
@@ -35,7 +37,11 @@ router.patch(
   validate(changePasswordSchema),
   changePassword
 );
-
+router.patch(
+  "/me/notifications",
+  validate(updateNotificationPreferencesSchema),
+  updateNotificationPreferences
+);
 router.post(
   "/me/deactivate",
   validate(accountPasswordSchema),

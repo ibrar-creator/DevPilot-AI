@@ -6,7 +6,7 @@ import userRoutes from "./user.routes.js";
 import adminRoutes from "./admin.routes.js";
 import codeReviewRoutes from "./code-review.routes.js";
 import aiToolsRoutes from "./ai-tools.routes.js";
-
+import analyticsRoutes from "./analytics.routes.js";
 import ApiResponse from "../utils/ApiResponse.js";
 
 const router = Router();
@@ -23,7 +23,7 @@ router.get("/health", (req, res) => {
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
 router.use("/admin", adminRoutes);
-
+router.use("/analytics", analyticsRoutes);
 // Existing code review
 router.use("/ai", codeReviewRoutes);
 
@@ -31,4 +31,5 @@ router.use("/ai", codeReviewRoutes);
 router.use("/ai", aiToolsRoutes);
 // Test case generator
 router.use("/ai", testCaseRoutes);
+router.use("/analytics", analyticsRoutes);
 export default router;

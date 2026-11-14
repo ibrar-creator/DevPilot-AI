@@ -6,12 +6,13 @@ export const generateTestCasesController = asyncHandler(
   async (req, res) => {
     const { code, language, framework, context } = req.validatedBody;
 
-    const result = await generateTestCases({
-      code,
-      language,
-      framework,
-      context,
-    });
+  const result = await generateTestCases({
+  userId: req.user._id,
+  code,
+  language,
+  framework,
+  context,
+});
 
     return res.status(200).json(
       new ApiResponse(

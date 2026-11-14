@@ -10,6 +10,14 @@ const safeUser = (user) => ({
   role: user.role,
   isEmailVerified: user.isEmailVerified,
   isActive: user.isActive,
+  notificationPreferences: {
+  emailNotifications:
+    user.notificationPreferences?.emailNotifications ?? true,
+  productUpdates:
+    user.notificationPreferences?.productUpdates ?? true,
+  securityAlerts:
+    user.notificationPreferences?.securityAlerts ?? true,
+},
   createdAt: user.createdAt,
 });
 
@@ -47,7 +55,29 @@ export const updateUserProfile = async (userId, data) => {
 
   return safeUser(user);
 };
+// Update notification preferences
+export const updateUserNotificationPreferences = async (
+  userId,
+  preferences,
+) => {
+  const user = await User.findById(userId);
 
+  if (!user || !user.isActive) {
+    throw new ApiError(404, "User account not found");
+  }
+
+  user.notificationPreferences = {
+    emailNotifications: preferences.emailNotifications,
+    productUpdates: preferences.productUpdates,
+    securityAlerts: preferences.securityAlerts,
+  };
+
+  await user.save();
+
+  return {
+    notificationPreferences: user.notificationPreferences,
+  };
+};
 // Change password
 export const changeUserPassword = async (
   userId,

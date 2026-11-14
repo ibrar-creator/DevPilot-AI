@@ -1,6 +1,6 @@
 import { generateAIResponse } from "./ai-provider.service.js";
 import ApiError from "../utils/ApiError.js";
-
+import { logAIActivity } from "./ai-activity.service.js";
 const SYSTEM_INSTRUCTION = `
 You are a senior software test engineer.
 
@@ -101,6 +101,7 @@ const validateTestResult = (result) => {
 };
 
 export const generateTestCases = async ({
+  userId,
   code,
   language,
   framework,
@@ -132,7 +133,15 @@ Requirements:
   });
 
   const testResult = validateTestResult(result);
-
+await logAIActivity({
+  userId,
+  tool: "test-generator",
+  language,
+  model,
+  code,
+  usage,
+  testCaseCount: testResult.testCases.length,
+});
   return {
     testResult,
     usage,

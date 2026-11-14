@@ -1,7 +1,7 @@
-import AIReview from "../models/ai/ai-review.model.js";
+
 import ApiError from "../utils/ApiError.js";
 import { generateAIResponse } from "./ai-provider.service.js";
-
+import { logAIActivity } from "./ai-activity.service.js";
 const SYSTEM_INSTRUCTION = `
 You are DevPilot AI, a senior software engineer and security-focused code reviewer.
 
@@ -150,16 +150,16 @@ Return the review in the required JSON format.
 
   // Usage logging must not fail an otherwise successful code review.
   try {
-    await AIReview.create({
-      userId,
-      language,
-      model,
-      codeLength: code.length,
-      score: review.score,
-      promptTokens: usage.promptTokens,
-      outputTokens: usage.outputTokens,
-      totalTokens: usage.totalTokens,
-    });
+    await logAIActivity({
+  userId,
+  tool: "code-review",
+  language,
+  model,
+  code,
+  usage,
+  score: review.score,
+  issueCount: review.issues.length,
+});
   } catch (error) {
     console.error("AI usage logging failed:", error.message);
   }

@@ -6,6 +6,11 @@ export interface User {
   role: string;
   isEmailVerified: boolean;
   createdAt: string;
+  notificationPreferences: {
+  emailNotifications: boolean;
+  productUpdates: boolean;
+  securityAlerts: boolean;
+};
 }
 
 export interface ApiResponse<T = unknown> {

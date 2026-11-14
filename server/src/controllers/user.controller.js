@@ -6,6 +6,7 @@ import {
   changeUserPassword,
   deactivateUserAccount,
   deleteUserAccount,
+  updateUserNotificationPreferences,
 } from "../services/user.service.js";
 
 import {
@@ -111,3 +112,20 @@ export const deleteAccount = asyncHandler(async (req, res) => {
     new ApiResponse(200, "Account permanently deleted")
   );
 });
+// PATCH /users/me/notifications
+export const updateNotificationPreferences = asyncHandler(
+  async (req, res) => {
+    const result = await updateUserNotificationPreferences(
+      req.user._id,
+      req.validatedBody
+    );
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        "Notification preferences updated successfully",
+        result
+      )
+    );
+  }
+);

@@ -10,11 +10,12 @@ import {
 export const explainCodeController = asyncHandler(async (req, res) => {
   const { code, language, context } = req.validatedBody;
 
-  const result = await explainCode({
-    code,
-    language,
-    context,
-  });
+const result = await explainCode({
+  userId: req.user._id,
+  code,
+  language,
+  context,
+});
 
   return res.status(200).json(
     new ApiResponse(
@@ -28,12 +29,13 @@ export const explainCodeController = asyncHandler(async (req, res) => {
 export const debugCodeController = asyncHandler(async (req, res) => {
   const { code, language, errorMessage, context } = req.validatedBody;
 
-  const result = await debugCode({
-    code,
-    language,
-    errorMessage,
-    context,
-  });
+const result = await debugCode({
+  userId: req.user._id,
+  code,
+  language,
+  errorMessage,
+  context,
+});
 
   return res.status(200).json(
     new ApiResponse(

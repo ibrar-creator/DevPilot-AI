@@ -17,7 +17,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-
+import type { NotificationPreferences } from "@/services/user.service";
 export default function SettingsPage() {
   const router = useRouter();
   const { user, loading, setUser } = useAuth();
@@ -45,6 +45,17 @@ const [accountPasswordVisible, setAccountPasswordVisible] =
 
 const [accountSaving, setAccountSaving] = useState(false);
 const [accountError, setAccountError] = useState("");
+const [notifications, setNotifications] =
+  useState<NotificationPreferences>({
+    emailNotifications: true,
+    productUpdates: true,
+    securityAlerts: true,
+  });
+
+const [notificationsLoading, setNotificationsLoading] = useState(true);
+const [notificationSaving, setNotificationSaving] = useState(false);
+const [notificationError, setNotificationError] = useState("");
+const [notificationSuccess, setNotificationSuccess] = useState("");
   useEffect(() => {
     if (!loading && !user) {
       router.replace("/login");
@@ -56,7 +67,43 @@ const [accountError, setAccountError] = useState("");
       setName(user.name);
     }
   }, [user]);
+useEffect(() => {
+  if (!user) return;
 
+  let cancelled = false;
+
+  const loadNotifications = async () => {
+    try {
+      setNotificationsLoading(true);
+
+      const profile = await userService.getProfile();
+
+      if (!cancelled) {
+        setNotifications(
+          profile.notificationPreferences ?? {
+            emailNotifications: true,
+            productUpdates: true,
+            securityAlerts: true,
+          }
+        );
+      }
+    } catch {
+      if (!cancelled) {
+        setNotificationError("Unable to load notification preferences.");
+      }
+    } finally {
+      if (!cancelled) {
+        setNotificationsLoading(false);
+      }
+    }
+  };
+
+  void loadNotifications();
+
+  return () => {
+    cancelled = true;
+  };
+}, [user]);
   if (loading || !user) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#080b12] text-slate-400">
@@ -64,6 +111,7 @@ const [accountError, setAccountError] = useState("");
       </main>
     );
   }
+  
 const handlePasswordChange = async (
   event: FormEvent<HTMLFormElement>
 ) => {
@@ -174,6 +222,50 @@ const closeAccountDialog = () => {
   setAccountPassword("");
   setAccountPasswordVisible(false);
   setAccountError("");
+};
+const handleNotificationChange = async (
+  key: keyof NotificationPreferences,
+  checked: boolean
+) => {
+  const previousPreferences = notifications;
+
+  const updatedPreferences = {
+    ...previousPreferences,
+    [key]: checked,
+  };
+
+  setNotifications(updatedPreferences);
+  setNotificationError("");
+  setNotificationSuccess("");
+
+  try {
+    setNotificationSaving(true);
+
+    const savedPreferences =
+      await userService.updateNotificationPreferences(
+        updatedPreferences
+      );
+
+    setNotifications(savedPreferences);
+    setNotificationSuccess("Notification preferences saved successfully.");
+  } catch (err: unknown) {
+    setNotifications(previousPreferences);
+
+    if (typeof err === "object" && err !== null && "response" in err) {
+      const apiError = err as {
+        response?: { data?: { message?: string } };
+      };
+
+      setNotificationError(
+        apiError.response?.data?.message ||
+          "Unable to save notification preferences."
+      );
+    } else {
+      setNotificationError("Something went wrong. Please try again.");
+    }
+  } finally {
+    setNotificationSaving(false);
+  }
 };
   const handleProfileUpdate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -427,38 +519,147 @@ const closeAccountDialog = () => {
 </section>
 
         <section className="mt-8">
-          <h2 className="text-base font-semibold">Other preferences</h2>
+  <h2 className="text-base font-semibold">
+    Notification Preferences
+  </h2>
 
-          <div className="mt-4 space-y-3">
-            {sections.map((section) => {
-              const Icon = section.icon;
+  <p className="mt-1 text-xs text-slate-400">
+    Choose which notifications you want to receive.
+  </p>
 
-              return (
-                <div
-                  key={section.title}
-                  className="flex items-center gap-4 rounded-xl border border-white/[0.07] bg-[#101622] p-4"
-                >
-                  <div className="rounded-lg bg-white/[0.05] p-3 text-slate-300">
-                    <Icon size={19} />
-                  </div>
+  <div className="mt-4 space-y-3">
+    {[
+      {
+        key: "emailNotifications",
+        title: "Email Notifications",
+        description: "Receive general account notifications through email.",
+      },
+      {
+        key: "productUpdates",
+        title: "Product Updates",
+        description: "Receive updates about new DevPilot features.",
+      },
+      {
+        key: "securityAlerts",
+        title: "Security Alerts",
+        description: "Receive important account and security alerts.",
+      },
+    ].map((item) => {
+      const key = item.key as keyof NotificationPreferences;
 
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-sm font-semibold">
-                      {section.title}
-                    </h3>
-                    <p className="mt-1 text-xs leading-5 text-slate-400">
-                      {section.description}
-                    </p>
-                  </div>
+      return (
+        <div
+          key={item.key}
+          className="flex items-center gap-4 rounded-xl border border-white/[0.07] bg-[#101622] p-4"
+        >
+          <div className="min-w-0 flex-1">
+            <h3 className="text-sm font-semibold">
+              {item.title}
+            </h3>
 
-                  <span className="shrink-0 text-[10px] text-slate-500">
-                    {section.status}
-                  </span>
-                </div>
-              );
-            })}
+            <p className="mt-1 text-xs leading-5 text-slate-400">
+              {item.description}
+            </p>
           </div>
-        </section>
+
+          <button
+            type="button"
+            role="switch"
+            aria-checked={notifications[key]}
+            aria-label={item.title}
+            disabled={notificationsLoading || notificationSaving}
+            onClick={() =>
+              void handleNotificationChange(
+                key,
+                !notifications[key]
+              )
+            }
+            className={`relative h-6 w-11 shrink-0 rounded-full transition ${
+              notifications[key]
+                ? "bg-blue-600"
+                : "bg-slate-600"
+            } disabled:cursor-not-allowed disabled:opacity-50`}
+          >
+            <span
+              className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${
+                notifications[key] ? "left-6" : "left-1"
+              }`}
+            />
+          </button>
+        </div>
+      );
+    })}
+  </div>
+
+  {notificationsLoading && (
+    <p className="mt-3 text-xs text-slate-400">
+      Loading notification preferences...
+    </p>
+  )}
+
+  {notificationSaving && (
+    <p className="mt-3 text-xs text-blue-400">
+      Saving preferences...
+    </p>
+  )}
+
+  {notificationError && (
+    <p className="mt-3 text-sm text-red-400">
+      {notificationError}
+    </p>
+  )}
+
+  {notificationSuccess && (
+    <p className="mt-3 text-sm text-emerald-400">
+      {notificationSuccess}
+    </p>
+  )}
+</section>
+
+<section className="mt-8">
+  <h2 className="text-base font-semibold">Other Preferences</h2>
+
+  <div className="mt-4 space-y-3">
+    {[
+      {
+        title: "Appearance",
+        description: "Customize your workspace appearance.",
+        icon: Palette,
+      },
+      {
+        title: "Privacy",
+        description: "Manage your account privacy.",
+        icon: Lock,
+      },
+    ].map((section) => {
+      const Icon = section.icon;
+
+      return (
+        <div
+          key={section.title}
+          className="flex items-center gap-4 rounded-xl border border-white/[0.07] bg-[#101622] p-4"
+        >
+          <div className="rounded-lg bg-white/[0.05] p-3 text-slate-300">
+            <Icon size={19} />
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <h3 className="text-sm font-semibold">
+              {section.title}
+            </h3>
+            <p className="mt-1 text-xs leading-5 text-slate-400">
+              {section.description}
+            </p>
+          </div>
+
+          <span className="shrink-0 text-[10px] text-slate-500">
+            Coming soon
+          </span>
+        </div>
+      );
+    })}
+  </div>
+</section>
 
 <section className="mt-8 rounded-2xl border border-red-500/20 bg-[#101622] p-5 sm:p-6">
   <div>

@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { motion } from "framer-motion";
 import LogoutButton from "@/components/auth/LogoutButton";
+import { analyticsService } from "@/services/analytics.service";
+import type { DashboardAnalytics } from "@/types/analytics";
 import {
   Activity,
   ArrowUpRight,
@@ -24,6 +26,7 @@ import {
   Sparkles,
   X,
   Zap,
+  FileText,
 } from "lucide-react";
 
 const navigation = [
@@ -34,67 +37,66 @@ const navigation = [
   { label: "Test Generator", icon: FlaskConical },
 ];
 
-const stats = [
+const getStats = (analytics: DashboardAnalytics | null) => [
   {
     label: "AI requests",
-    value: "1,284",
-    change: "+12.8%",
-    positive: true,
+    value: analytics?.overview.totalRequests ?? 0,
     icon: Zap,
   },
   {
     label: "Code reviews",
-    value: "348",
-    change: "+8.2%",
-    positive: true,
+    value: analytics?.overview.codeReviews ?? 0,
     icon: ShieldCheck,
   },
   {
     label: "Bugs detected",
-    value: "126",
-    change: "+18.4%",
-    positive: true,
+    value: analytics?.overview.bugsDetected ?? 0,
     icon: Bug,
   },
   {
     label: "Tests generated",
-    value: "512",
-    change: "+6.5%",
-    positive: true,
+    value: analytics?.overview.testsGenerated ?? 0,
     icon: FlaskConical,
   },
 ];
+const getActivityDetails = (tool: string) => {
+  switch (tool) {
+    case "code-review":
+      return {
+        title: "Code review completed",
+        detail: "Code Review",
+        icon: ShieldCheck,
+      };
 
-const activities = [
-  {
-    title: "Authentication module reviewed",
-    detail: "Code Review · JavaScript",
-    time: "12 minutes ago",
-    status: "Completed",
-    icon: ShieldCheck,
-  },
-  {
-    title: "API controller explained",
-    detail: "Code Explainer · Node.js",
-    time: "45 minutes ago",
-    status: "Completed",
-    icon: Code2,
-  },
-  {
-    title: "Null reference bug detected",
-    detail: "AI Debugger · TypeScript",
-    time: "2 hours ago",
-    status: "Reviewed",
-    icon: Bug,
-  },
-  {
-    title: "Unit tests generated",
-    detail: "Test Generator · JavaScript",
-    time: "Yesterday",
-    status: "Completed",
-    icon: FlaskConical,
-  },
-];
+    case "code-explainer":
+      return {
+        title: "Code explanation generated",
+        detail: "Code Explainer",
+        icon: Code2,
+      };
+
+    case "ai-debugger":
+      return {
+        title: "Code debugging completed",
+        detail: "AI Debugger",
+        icon: Bug,
+      };
+
+    case "test-generator":
+      return {
+        title: "Test cases generated",
+        detail: "Test Generator",
+        icon: FlaskConical,
+      };
+
+    default:
+      return {
+        title: "AI activity completed",
+        detail: "AI Tool",
+        icon: FileText,
+      };
+  }
+};
 
 const tools = [
   {
@@ -131,45 +133,84 @@ export default function DashboardPage() {
   const [activeNav, setActiveNav] = useState("Overview");
   const [mobileMenu, setMobileMenu] = useState(false);
   const [notifications, setNotifications] = useState(false);
+  const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
 
-const selectNavigation = (label: string) => {
-  setActiveNav(label);
-  setMobileMenu(false);
+const [analyticsLoading, setAnalyticsLoading] = useState(true);
 
-  const routes: Record<string, string> = {
-    Overview: "/",
-    "Code Review": "/code-review",
-    "Code Explainer": "/code-explainer",
-    "AI Debugger": "/ai-debugger",
-    "Test Generator": "/test-generator",
-    "Settings": "/settings",
+const [analyticsError, setAnalyticsError] = useState(false);
+  const stats = getStats(analytics);
+  const selectNavigation = (label: string) => {
+    setActiveNav(label);
+    setMobileMenu(false);
+
+    const routes: Record<string, string> = {
+      Overview: "/",
+      "Code Review": "/code-review",
+      "Code Explainer": "/code-explainer",
+      "AI Debugger": "/ai-debugger",
+      "Test Generator": "/test-generator",
+      Settings: "/settings",
+    };
+
+    const route = routes[label];
+
+    if (route) {
+      router.push(route);
+    }
   };
-
-  const route = routes[label];
-
-  if (route) {
-    router.push(route);
-  }
-};
   const router = useRouter();
   const { user, loading } = useAuth();
-const userName = user?.name || "Developer";
+  const userName = user?.name || "Developer";
 
-const firstName = userName.trim().split(/\s+/)[0];
+  const firstName = userName.trim().split(/\s+/)[0];
 
-const userInitials =
-  userName
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("") || "U";
+  const userInitials =
+    userName
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join("") || "U";
   useEffect(() => {
     if (!loading && !user) {
       router.replace("/login");
     }
   }, [loading, user, router]);
+useEffect(() => {
+  if (loading || !user) return;
 
+  let cancelled = false;
+
+  const fetchAnalytics = async () => {
+    try {
+      setAnalyticsLoading(true);
+      setAnalyticsError(false);
+
+      const result =
+        await analyticsService.getDashboardAnalytics();
+
+      if (!cancelled) {
+        setAnalytics(result);
+      }
+    } catch (error) {
+      console.error("Dashboard analytics error:", error);
+
+      if (!cancelled) {
+        setAnalyticsError(true);
+      }
+    } finally {
+      if (!cancelled) {
+        setAnalyticsLoading(false);
+      }
+    }
+  };
+
+  fetchAnalytics();
+
+  return () => {
+    cancelled = true;
+  };
+}, [loading, user]);
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#080b12] text-white">
@@ -185,6 +226,7 @@ const userInitials =
       </main>
     );
   }
+
   return (
     <main className="min-h-screen bg-[#080b12] text-white">
       <div className="dashboard-shell">
@@ -390,15 +432,15 @@ const userInitials =
 
                     <div className="mt-5 flex items-end justify-between">
                       <p className="text-2xl font-bold tracking-tight">
-                        {stat.value}
+                        {analyticsLoading ? "..." : stat.value.toLocaleString()}
                       </p>
                       <span className="flex items-center gap-1 text-xs font-medium text-emerald-400">
                         <ArrowUpRight size={13} />
-                        {stat.change}
+                        {stat.value}
                       </span>
                     </div>
                     <p className="mt-2 text-[11px] text-slate-500">
-                      Sample dashboard metrics
+                      Actual account statistics
                     </p>
                   </motion.div>
                 );
@@ -462,37 +504,56 @@ const userInitials =
                 </div>
 
                 <div className="mt-5 divide-y divide-white/[0.06]">
-                  {activities.map((activity) => {
-                    const Icon = activity.icon;
+                  {analyticsLoading ? (
+                    <p className="py-8 text-center text-sm text-slate-500">
+                      Loading recent activities...
+                    </p>
+                  ) : analyticsError ? (
+                    <p className="py-8 text-center text-sm text-red-400">
+                      Unable to load recent activities.
+                    </p>
+                  ) : !analytics?.recentActivities.length ? (
+                    <p className="py-8 text-center text-sm text-slate-500">
+                      No AI activity yet. Start using your AI tools!
+                    </p>
+                  ) : (
+                    analytics.recentActivities.map((activity) => {
+                      const details = getActivityDetails(activity.tool);
+                      const Icon = details.icon;
 
-                    return (
-                      <div
-                        key={activity.title}
-                        className="flex items-center gap-3 py-4"
-                      >
-                        <div className="activity-icon">
-                          <Icon size={17} />
+                      return (
+                        <div
+                          key={activity._id}
+                          className="flex items-center gap-3 py-4"
+                        >
+                          <div className="activity-icon">
+                            <Icon size={17} />
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">
+                              {details.title}
+                            </p>
+
+                            <p className="mt-1 text-xs text-slate-500">
+                              {details.detail} · {activity.language}
+                            </p>
+                          </div>
+
+                          <div className="hidden text-right sm:block">
+                            <p className="text-[11px] text-slate-400">
+                              {new Date(activity.createdAt).toLocaleString()}
+                            </p>
+
+                            <p className="mt-1 flex items-center justify-end gap-1 text-[11px] text-emerald-400">
+                              <Check size={12} />
+                              Completed
+                            </p>
+                          </div>
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">
-                            {activity.title}
-                          </p>
-                          <p className="mt-1 text-xs text-slate-500">
-                            {activity.detail}
-                          </p>
-                        </div>
-                        <div className="hidden text-right sm:block">
-                          <p className="text-[11px] text-slate-400">
-                            {activity.time}
-                          </p>
-                          <p className="mt-1 flex items-center justify-end gap-1 text-[11px] text-emerald-400">
-                            <Check size={12} />
-                            {activity.status}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
               </section>
 
@@ -510,21 +571,38 @@ const userInitials =
                 <div className="mt-7">
                   <div className="flex items-end justify-between">
                     <div>
-                      <p className="text-3xl font-bold">1,284</p>
+                      <p className="text-3xl font-bold">
+                        {analyticsLoading
+                          ? "..."
+                          : (
+                              analytics?.usage.monthlyRequests ?? 0
+                            ).toLocaleString()}
+                      </p>
+
                       <p className="mt-1 text-xs text-slate-500">
-                        AI requests used
+                        AI requests this month
                       </p>
                     </div>
+
                     <span className="text-xs text-slate-400">This month</span>
                   </div>
 
-                  <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/[0.07]">
-                    <div className="h-full w-[64%] rounded-full bg-gradient-to-r from-blue-600 to-cyan-400" />
-                  </div>
+                  <div className="mt-6 rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+                    <p className="text-xs text-slate-400">
+                      Monthly token consumption
+                    </p>
 
-                  <div className="mt-3 flex justify-between text-xs text-slate-500">
-                    <span>64% used</span>
-                    <span>Illustrative usage</span>
+                    <p className="mt-2 text-xl font-semibold">
+                      {analyticsLoading
+                        ? "..."
+                        : (
+                            analytics?.usage.monthlyTokens ?? 0
+                          ).toLocaleString()}
+                    </p>
+
+                    <p className="mt-1 text-[11px] text-slate-500">
+                      Tokens used by your AI tools
+                    </p>
                   </div>
                 </div>
 

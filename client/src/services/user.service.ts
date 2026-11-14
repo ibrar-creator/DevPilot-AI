@@ -14,8 +14,27 @@ export interface ChangePasswordPayload {
 export interface AccountPasswordPayload {
   currentPassword: string;
 }
-
+export interface NotificationPreferences {
+  emailNotifications: boolean;
+  productUpdates: boolean;
+  securityAlerts: boolean;
+}
 export const userService = {
+    async getProfile(): Promise<User> {
+  const response = await api.get<ApiResponse<User>>("/users/me");
+
+  return response.data.data;
+},
+
+async updateNotificationPreferences(
+  payload: NotificationPreferences
+): Promise<NotificationPreferences> {
+  const response = await api.patch<
+    ApiResponse<{ notificationPreferences: NotificationPreferences }>
+  >("/users/me/notifications", payload);
+
+  return response.data.data.notificationPreferences;
+},
   async updateProfile(payload: UpdateProfilePayload): Promise<User> {
     const response = await api.patch<ApiResponse<User>>(
       "/users/me",
