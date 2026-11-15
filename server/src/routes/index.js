@@ -8,7 +8,7 @@ import codeReviewRoutes from "./code-review.routes.js";
 import aiToolsRoutes from "./ai-tools.routes.js";
 import analyticsRoutes from "./analytics.routes.js";
 import ApiResponse from "../utils/ApiResponse.js";
-
+import chatRoutes from "./chat.routes.js";
 const router = Router();
 
 router.get("/health", (req, res) => {
@@ -32,4 +32,5 @@ router.use("/ai", aiToolsRoutes);
 // Test case generator
 router.use("/ai", testCaseRoutes);
 router.use("/analytics", analyticsRoutes);
+router.use("/chat", chatRoutes);
 export default router;

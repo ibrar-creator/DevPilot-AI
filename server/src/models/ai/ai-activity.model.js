@@ -18,6 +18,7 @@ const aiActivitySchema = new mongoose.Schema(
         "ai-debugger",
         "test-generator",
         "code-fixer",
+        "chat"
       ],
       required: true,
     },

@@ -19,6 +19,7 @@ import {
   FlaskConical,
   LayoutDashboard,
   Menu,
+  MessageSquare,
   Plus,
   Search,
   Settings,
@@ -32,11 +33,13 @@ import {
 
 const navigation = [
   { label: "Overview", icon: LayoutDashboard },
+    { label: "AI Chat", icon: MessageSquare },
   { label: "Code Review", icon: ShieldCheck },
   { label: "Code Explainer", icon: Code2 },
   { label: "AI Debugger", icon: Bug },
   { label: "Test Generator", icon: FlaskConical },
     { label: "AI Code Fixer", icon: WandSparkles },
+    
 ];
 
 const getStats = (analytics: DashboardAnalytics | null) => [
@@ -165,6 +168,7 @@ const [analyticsError, setAnalyticsError] = useState(false);
       "Test Generator": "/test-generator",
       "Settings": "/settings",
       "AI Code Fixer": "/code-fixer",
+      "AI Chat": "/chat",
     };
 
     const route = routes[label];
