@@ -37,7 +37,7 @@ export const generateAIResponse = async ({
       headers: {
         "Content-Type": "application/json",
       },
-      signal: AbortSignal.timeout(60000),
+      signal: AbortSignal.timeout(300000),
       body: JSON.stringify({
         systemInstruction: {
           parts: [{ text: systemInstruction }],
@@ -53,7 +53,7 @@ export const generateAIResponse = async ({
         generationConfig: {
           temperature: 0.2,
           responseMimeType: "application/json",
-          maxOutputTokens: 8192,
+          maxOutputTokens: 32768,
         },
       }),
     });
@@ -162,7 +162,7 @@ export const generateAIChatResponse = async ({
       headers: {
         "Content-Type": "application/json",
       },
-      signal: AbortSignal.timeout(60000),
+      signal: AbortSignal.timeout(300000),
       body: JSON.stringify({
         systemInstruction: {
           parts: [{ text: systemInstruction }],
@@ -172,7 +172,7 @@ export const generateAIChatResponse = async ({
 
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 8192,
+          maxOutputTokens: 32768,
         },
       }),
     });
@@ -277,7 +277,7 @@ export const generateAIChatStream = async ({
       },
       signal: AbortSignal.any([
         signal ?? new AbortController().signal,
-        AbortSignal.timeout(60000),
+        AbortSignal.timeout(300000),
       ]),
       body: JSON.stringify({
         systemInstruction: {
@@ -286,7 +286,7 @@ export const generateAIChatStream = async ({
         contents,
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 8192,
+          maxOutputTokens: 32768,
         },
       }),
     });
