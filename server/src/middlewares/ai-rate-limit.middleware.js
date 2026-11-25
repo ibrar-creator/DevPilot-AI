@@ -3,7 +3,7 @@ import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import { env } from "../config/env.js";
 
 export const aiRateLimit = rateLimit({
-  windowMs: 60 *60 * 1000,
+  windowMs: 6 *60 * 1000,
 
   limit: env.AI_RATE_LIMIT, 
   standardHeaders: "draft-8",
